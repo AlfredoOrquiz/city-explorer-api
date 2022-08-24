@@ -8,9 +8,15 @@ console.log('Suprise! I\'m alive.')
 
 // To create a server we bring in the express
 const express = require('express');
+const cors = require('cors');
 
 // We need to bring in our .env file, so we'll use this after we run 'npm i dotenv:
 require('dotenv').config();
+
+// I need to bring in the data from the "weather.json" file with a "require".
+// Now that I have a "ROUTE", I can "ROUTE" the data inside of the file,
+// and use it in the server.
+let data = require('./data/weather.json')
 
 // USE
 // Once we have required something, we have to use it. This is where we will assign the required file a variable. React does this in one step, express take 2: require and use. This is just how Express is.
@@ -32,9 +38,26 @@ app.get('/', (request, response) => {
   response.send('Hello from all of us!');
 });
 
-app.get('/sayHello', (request, response) => {
-  console.log(request);
-  response.send('Hello there.');
+// Now I can "GET" the data from the file with the "app.get()",
+// and that is how we "ROUTE". The name of it needs to be "/weather"
+// according to the assignment.
+app.get('/weather', (request, response) => {
+  console.log(request.query.city_name);
+  try {
+    let cityQuery = request.query.city_name.toLowerCase();
+    let cityToSend = data.find(city => city.city_name === cityQuery);
+    let selected = cityToSend.data.map (day => new Forcast(day));
+    response.send(selected);
+  } catch(err) {
+    next(err)
+  }
+});
+
+app.get('/userGreetings', (request, response) => {
+  console.log(request.query.name);
+  let firstName = request.query.firstName;
+  let lastName = request.query.lastName;
+  response.send(`Hello ${firstName} ${lastName}`);
 });
 
 // Catch all "Star" route
@@ -44,6 +67,16 @@ app.get('*', (request, response) => {
 
 // ERRORS
 // Handles any errors
+
+// CLASSES
+class Forecast {
+  constructor(day) {
+    this.name = city.name;
+    this.city = city;
+    this.date = day.datetime;
+    this.
+  }
+}
 
 // LISTEN
 // Start the server
