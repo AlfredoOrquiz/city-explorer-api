@@ -23,6 +23,7 @@ let data = require('./data/weather.json')
 
 // Once we have express, we must USE express
 const app = express();
+app.use(cors());
 
 // Define PORT value - validate that our .env is working
 const PORT = process.env.PORT || 3002;
@@ -34,47 +35,44 @@ const PORT = process.env.PORT || 3002;
 // Create a basic default route:
 // app.get correletes to axios.get
 // The first parameter is a URL in quotes
-app.get('/', (request, response) => {
+app.get('/hello', (request, response) => {
   response.send('Hello from all of us!');
 });
 
 // Now I can "GET" the data from the file with the "app.get()",
 // and that is how we "ROUTE". The name of it needs to be "/weather"
 // according to the assignment.
-app.get('/weather', (request, response) => {
+app.get('/weather', (request, response, next) => {
   console.log(request.query.city_name);
   try {
-    let cityQuery = request.query.city_name.toLowerCase();
-    let cityToSend = data.find(city => city.city_name === cityQuery);
-    let selected = cityToSend.data.map (day => new Forcast(day));
-    response.send(selected);
+    let cityQuery = request.query.city_name;
+    console.log(cityQuery);
+    let weatherObj = data.find(city => city.city_name.toLowerCase() === cityQuery.toLowerCase());
+    console.log(weatherObj.data);
+    let selectedCity = weatherObj.data.map (day => new Forecast(day));
+    response.send(selectedCity);
   } catch(err) {
     next(err)
   }
 });
 
-app.get('/userGreetings', (request, response) => {
-  console.log(request.query.name);
-  let firstName = request.query.firstName;
-  let lastName = request.query.lastName;
-  response.send(`Hello ${firstName} ${lastName}`);
-});
-
 // Catch all "Star" route
 app.get('*', (request, response) => {
-  response.send('We are not the one\'s you are looking for.');
+  response.send('Oh, sorry. We don\'t have that here.');
 });
 
 // ERRORS
 // Handles any errors
 
 // CLASSES
+// Now I need to create a Forecast class in order to render
+// the date and description
 class Forecast {
   constructor(day) {
-    this.name = city.name;
-    this.city = city;
+    this.description = day.weather.description;
     this.date = day.datetime;
-    this.
+    this.highTemp = day.max_temp;
+    this.lowTemp = day.low_temp;
   }
 }
 
