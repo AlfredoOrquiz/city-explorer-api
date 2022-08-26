@@ -58,11 +58,15 @@ app.get('/weather', (request, response, next) => {
 
 // Catch all "Star" route
 app.get('*', (request, response) => {
-  response.send('Oh, sorry. We don\'t have that here.');
+  response.send('You\'re killing me smalls!.');
 });
 
 // ERRORS
 // Handles any errors
+
+app.use((err, req, res, next) => {
+  res.status(500).send(err.message);
+});
 
 // CLASSES
 // Now I need to create a Forecast class in order to render
