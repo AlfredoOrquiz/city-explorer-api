@@ -7,8 +7,9 @@ console.log('Suprise! I\'m alive.')
 //In our servers, we have to use 'require' instead of import. Here we will the requirements for a server
 
 // To create a server we bring in the express
-const express = require('express');
+
 const cors = require('cors');
+const express = require('express');
 
 // We need to bring in our .env file, so we'll use this after we run 'npm i dotenv:
 require('dotenv').config();
@@ -22,6 +23,7 @@ let data = require('./data/weather.json')
 // Once we have required something, we have to use it. This is where we will assign the required file a variable. React does this in one step, express take 2: require and use. This is just how Express is.
 
 // Once we have express, we must USE express
+const axios = require(`axios`)
 const app = express();
 app.use(cors());
 
@@ -42,19 +44,27 @@ app.get('/hello', (request, response) => {
 // Now I can "GET" the data from the file with the "app.get()",
 // and that is how we "ROUTE". The name of it needs to be "/weather"
 // according to the assignment.
-app.get('/weather', (request, response, next) => {
-  console.log(request.query.city_name);
+// Update the "/weather" callback. Instead of referencing "weather.json" in the "data" folder,
+// access the data from the weather data from the website using "await", "axios", and don't
+// forget the ".data".
+// Next step is to pretty much copy the code of "/weather" in order to render the movies. I
+// shall be rendering it as "/movies"
+app.get('/weather', async (request, response, next) => {
   try {
-    let cityQuery = request.query.city_name;
-    console.log(cityQuery);
-    let weatherObj = data.find(city => city.city_name.toLowerCase() === cityQuery.toLowerCase());
-    console.log(weatherObj.data);
-    let selectedCity = weatherObj.data.map (day => new Forecast(day));
+    let lat = request.query.lat;
+    let lon = request.query.lon;
+    let url = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=3&units=I`
+    let weatherObj = await axios.get(url);
+    let selectedCity = weatherObj.data.data.map (day => new Forecast(day));
     response.send(selectedCity);
   } catch(err) {
     next(err)
   }
 });
+
+// app.get('/movies', async (request, response, next) => {
+//   try {}
+// });
 
 // Catch all "Star" route
 app.get('*', (request, response) => {
@@ -77,6 +87,13 @@ class Forecast {
     this.date = day.datetime;
     this.highTemp = day.max_temp;
     this.lowTemp = day.low_temp;
+  }
+}
+
+class Movie {
+  constructor(movie) {
+    this.title = movie.title;
+    thisthis.overview = movie.overview;
   }
 }
 
