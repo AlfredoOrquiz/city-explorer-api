@@ -2,14 +2,10 @@
 
 console.log('Suprise! I\'m alive.')
 
-
-//Require
-//In our servers, we have to use 'require' instead of import. Here we will the requirements for a server
-
-// To create a server we bring in the express
-
 const cors = require('cors');
 const express = require('express');
+const handleWeather = require('./weather');
+const handleMovies = require('./movies');
 
 // We need to bring in our .env file, so we'll use this after we run 'npm i dotenv:
 require('dotenv').config();
@@ -23,7 +19,6 @@ let data = require('./data/weather.json')
 // Once we have required something, we have to use it. This is where we will assign the required file a variable. React does this in one step, express take 2: require and use. This is just how Express is.
 
 // Once we have express, we must USE express
-const axios = require(`axios`)
 const app = express();
 app.use(cors());
 
@@ -50,30 +45,8 @@ app.get('/hello', (request, response) => {
 // Next step is to pretty much copy the code of "/weather" in order to render the movies. I
 // shall be rendering it as "/movies"
 
-app.get('/movies', async (request, response, next) => {
-  try {
-    let title = request.query.title;
-    let urlMovies = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${title}`
-    let movieObj = await axios.get(urlMovies);
-    let selectedMovies = movieObj.data.results.map(movie => new Movie(movie));
-    response.send(selectedMovies);
-  } catch(err) {
-    next(err)
-  }
-});
-
-app.get('/weather', async (request, response, next) => {
-  try {
-    let lat = request.query.lat;
-    let lon = request.query.lon;
-    let urlWeather = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=5&units=I`
-    let weatherObj = await axios.get(urlWeather);
-    let selectedCity = weatherObj.data.data.map (day => new Forecast(day));
-    response.send(selectedCity);
-  } catch(err) {
-    next(err)
-  }
-});
+app.get('/weather', handleWeather)
+app.get('/movies', handleMovies)
 
 // app.get('/movies', async (request, response, next) => {
 //   try {}
@@ -94,22 +67,6 @@ app.use((err, req, res, next) => {
 // CLASSES
 // Now I need to create a Forecast class in order to render
 // the date and description
-class Forecast {
-  constructor(day) {
-    this.date = day.datetime;
-    this.description = day.weather.description;
-    this.highTemp = day.max_temp;
-    this.lowTemp = day.low_temp;
-  }
-}
-
-class Movie {
-  constructor(movie) {
-    this.image = movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : '';
-    this.overview = movie.overview;
-    this.title = movie.title;
-  }
-}
 
 // LISTEN
 // Start the server
