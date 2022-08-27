@@ -49,12 +49,25 @@ app.get('/hello', (request, response) => {
 // forget the ".data".
 // Next step is to pretty much copy the code of "/weather" in order to render the movies. I
 // shall be rendering it as "/movies"
+
+app.get('/movies', async (request, response, next) => {
+  try {
+    let title = request.query.title;
+    let urlMovies = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${title}`
+    let movieObj = await axios.get(urlMovies);
+    let selectedMovies = movieObj.data.results.map(movie => new Movie(movie));
+    response.send(selectedMovies);
+  } catch(err) {
+    next(err)
+  }
+});
+
 app.get('/weather', async (request, response, next) => {
   try {
     let lat = request.query.lat;
     let lon = request.query.lon;
-    let url = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=3&units=I`
-    let weatherObj = await axios.get(url);
+    let urlWeather = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=5&units=I`
+    let weatherObj = await axios.get(urlWeather);
     let selectedCity = weatherObj.data.data.map (day => new Forecast(day));
     response.send(selectedCity);
   } catch(err) {
@@ -83,8 +96,8 @@ app.use((err, req, res, next) => {
 // the date and description
 class Forecast {
   constructor(day) {
-    this.description = day.weather.description;
     this.date = day.datetime;
+    this.description = day.weather.description;
     this.highTemp = day.max_temp;
     this.lowTemp = day.low_temp;
   }
@@ -92,8 +105,9 @@ class Forecast {
 
 class Movie {
   constructor(movie) {
+    this.image = movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : '';
+    this.overview = movie.overview;
     this.title = movie.title;
-    thisthis.overview = movie.overview;
   }
 }
 
